@@ -5,9 +5,11 @@ using System.Threading.Tasks;
 using api.Data;
 using api.Modules;
 using Microsoft.AspNetCore.Http.HttpResults;
+using api.Mappers; 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+using api.Dto;
+using api.Dto.Stock;
 
 namespace api.controllers
 {
@@ -26,17 +28,29 @@ namespace api.controllers
 
         public IActionResult GetAll()
         {
-            var stocks = _context.Stock.ToList(); //performing differed execution
+            var stocks = _context.Stock.ToList()
+            .Select(s => s.ToStockDto()); //performing differed execution
             return Ok(stocks);
         }
         [HttpGet("{id}")]
-        public IActionResult GetById([FromRoute] int id) {
-        var stock = _context.Stock.Find(id);
-        if (stock == null)
+        public IActionResult GetById([FromRoute] int id)
         {
-            return NotFound();
+            var stock = _context.Stock.Find(id);
+            if (stock == null)
+            {
+                return NotFound();
+            }
+            return Ok(stock.ToStockDto());
         }
-        return Ok(stock);
+
+        [HttpPost]
+
+        public IActionResult Create([FromBody] CreateStockDto StockDto)
+        {
+            var stockModel = StockDto.ToStockFromCreateDto();
+            _context.Stock.Add(stockModel);
+            _context.SaveChanges();
+            return CreatedAtAction(nameof(GetById), new { id = stockModel.Id }, stockModel.ToStockDto());
         }
 
 

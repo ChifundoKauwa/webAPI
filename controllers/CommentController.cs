@@ -25,14 +25,15 @@ namespace api.controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var comments = await _commentRepo.GetAllAnsyc();
+            var comments = await _commentRepo.GetAllAsync();
             var commentsDto = comments.Select(s => s.ToCommentDto());
             return Ok(commentsDto);
         }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var comment = await _commentRepo.GetByIdAnsyc(id);
+            var comment = await _commentRepo.GetByIdAsync(id);
             if (comment == null)
             {
                 return NotFound();
@@ -53,19 +54,28 @@ namespace api.controllers
 
         [HttpPut]
         [Route("{id}")]
-        public async Task<IActionResult> Update([FromRoute]int id,[FromBody] UpdateCommentRequestDto updatecommentRequestDto)
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateCommentRequestDto updateDto)
         {
-            var comment = await _commentRepo.GetByIdAnsyc(id);
+            var comment = await _commentRepo.UpdateAsync(updateDto.ToCommentFromUpdate(), id);
             if (comment == null)
             {
-                return NotFound();
+                return NotFound("comment not found");
+
             }
-            
-            comment.Title = updatecommentRequestDto.Title;
-            comment.Content = updatecommentRequestDto.Content;
-            
-            await _commentRepo.UpdateAsync(comment, id);
             return Ok(comment.ToCommentDto());
         }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> delete([FromRoute] int id)
+        {
+            var commentModel = await _commentRepo.DeleteAsync(id);
+            if (commentModel == null)
+            {
+                return NotFound("comment not found");
+            }
+            return Ok(commentModel);
+        }
+
     }
 }

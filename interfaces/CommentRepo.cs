@@ -10,11 +10,11 @@ namespace api.interfaces
 {
     public interface ICommentRepo
     {
-        Task<List<Comment>> GetAllAnsyc();
-        Task<Comment?> GetByIdAnsyc(int id);
+        Task<List<Comment>> GetAllAsync();
+        Task<Comment?> GetByIdAsync(int id);
         Task<Comment> CreateAsync(Comment commentModel);
         
         Task<Comment?> UpdateAsync(Comment commentModel, int id);
-       
+        Task<Comment?> DeleteAsync(int id);
     }
 }

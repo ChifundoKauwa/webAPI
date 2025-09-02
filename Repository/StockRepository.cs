@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using api.Data;
 using api.Dto.Stock;
+using api.helpers;
 using api.interfaces;
 using api.Modules;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,7 @@ namespace api.Repository
     public class StockRepository : IStockInterface
     {
         private readonly ApplicationDBContext _context;
+
         
         public StockRepository(ApplicationDBContext context)
         {
@@ -39,14 +41,23 @@ namespace api.Repository
             return stockModel;
         }
 
-        public async Task<List<Stock>> GetAllAsync()
+        public async Task<List<Stock>> GetAllAsync(QueryObject query)
         {
-            return await _context.Stock.ToListAsync();
+            var stock = _context.Stock.Include(c => c.comments).AsQueryable();
+            if (!string.IsNullOrWhiteSpace(query.CompanyName))
+            {
+                stock = stock.Where(s => s.CompanyName.Contains(query.CompanyName));
+            }
+            if (!string.IsNullOrWhiteSpace(query.Symbol))
+            {
+                 stock = stock.Where(s => s.Symbol.Contains(query.Symbol));
+            }
+            return await stock.ToListAsync();
         }
 
         public async Task<Stock?> GetByIdAsync(int id)
         {
-            return await _context.Stock.FindAsync(id);
+            return await _context.Stock.Include(c => c.comments).FirstOrDefaultAsync(i => i.Id == id);
         }
 
         public async Task<Stock?> UpdateAsync(int id, UpdateStockRequestDto stockDto)
@@ -68,5 +79,12 @@ namespace api.Repository
             return existingStock;
 
         }
+
+        public async Task<bool> StockExists(int id)
+        {
+            return await _context.Stock.AnyAsync(s => s.Id == id);
+        }
+
+       
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using api.Data;
 using api.Dto.Stock;
@@ -52,7 +53,17 @@ namespace api.Repository
             {
                  stock = stock.Where(s => s.Symbol.Contains(query.Symbol));
             }
-            return await stock.ToListAsync();
+            if (!string.IsNullOrWhiteSpace(query.SortBy))
+            {
+
+                if (query.SortBy.Equals("Symbol", StringComparison.OrdinalIgnoreCase))
+                {
+                    stock = query.IsDescending ? stock.OrderByDescending(s => s.Symbol) : stock.OrderBy(s =>s.Symbol);
+
+                }
+            }
+            var skipNumber = (query.Page - 1) * query.PageSize; 
+            return await stock.Skip(skipNumber).Take(query.PageSize).ToListAsync();
         }
 
         public async Task<Stock?> GetByIdAsync(int id)

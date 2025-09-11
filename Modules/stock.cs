@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace api.Modules
 {
-    public class stock
+    public class Stock
     {
         public int Id { get; set; }
         public String Symbol { get; set; } = string.Empty;
@@ -15,7 +15,7 @@ namespace api.Modules
         public decimal Purchase { get; set; }
         public decimal LastDiv { get; set; }
         public String Industry { get; set; } = string.Empty;
-        public long MakertCap { get; set; }
+        public long MarketCap { get; set; }
         public List<Comment> comments { get; set; } = new List<Comment>();
     }
     

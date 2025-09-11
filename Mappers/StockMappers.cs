@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using api.Dto.Stock;
 using api.Modules;
+using api.Dto.Comments;
+
 
 
 namespace api.Mappers
@@ -20,7 +22,8 @@ namespace api.Mappers
                 Purchase = stockModel.Purchase,
                 LastDiv = stockModel.LastDiv,
                 Industry = stockModel.Industry,
-                MarketCap = stockModel.MarketCap
+                MarketCap = stockModel.MarketCap,
+                comments = stockModel.comments.Select(c=>c.ToCommentDto()).ToList()
             };
         }
         public static Stock ToStockFromCreateDto( this CreateStockDto stockDto)
@@ -33,6 +36,7 @@ namespace api.Mappers
                 LastDiv = stockDto.LastDiv,
                 Industry = stockDto.Industry,
                 MarketCap = stockDto.MakertCap,
+                
             };
         }
     }

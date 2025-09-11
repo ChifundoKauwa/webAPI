@@ -12,6 +12,7 @@ using api.Dto;
 using api.Dto.Stock;
 using api.interfaces;
 using api.Repository;
+using api.helpers;
 
 namespace api.controllers
 {
@@ -30,9 +31,9 @@ namespace api.controllers
 
         [HttpGet]
 
-        public  async Task<IActionResult> GetAll()
+        public  async Task<IActionResult> GetAll([FromQuery] QueryObject query)
         {
-            var stocks = await _stockRepo.GetAllAsync();
+            var stocks = await _stockRepo.GetAllAsync(query);
             var stockDto =stocks.Select(s => s.ToStockDto()); //performing differed execution
             return Ok(stocks);
         }

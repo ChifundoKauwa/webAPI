@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using api.Modules;
 using api.Dto.Account;
+using api.interfaces;
 
 namespace api.controllers
 {
@@ -11,14 +12,15 @@ namespace api.controllers
     public class AccountController : ControllerBase
     {
         private readonly UserManager<Appuser> _userManager;
-        public AccountController(UserManager<Appuser> userManager)
+        private readonly ITokenService _tokenService;
+        public AccountController(UserManager<Appuser> userManager,ITokenService tokenService)
         {
             _userManager = userManager;
+            _tokenService = tokenService;
 
         }
 
-        public Appuser AppUser { get; private set; }
-
+        
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto register)
         { try
@@ -27,7 +29,7 @@ namespace api.controllers
                 {
                     return BadRequest(ModelState);
                 }
-                var appUser = new AppUser
+                var appUser = new Appuser
                 {
                     UserName = register.Username,
                     Email = register.Email
@@ -40,7 +42,14 @@ namespace api.controllers
                     var roleResult = await _userManager.AddToRoleAsync(appUser, "User");
                     if (roleResult.Succeeded)
                     {
-                        return Ok("user created");
+                        return Ok(
+                            new NewUserDto
+                            {
+                                UserName = appUser.UserName,
+                                Email = appUser.Email,
+                              Token = _tokenService.CreateToken(appUser)
+                            }
+                        );
                     }
                     else
                     {
@@ -61,11 +70,5 @@ namespace api.controllers
             
         }
 
-    }
-
-    internal class AppUser : Appuser
-    {
-        public string UserName { get; set; }
-        public string Email { get; set; }
     }
 }

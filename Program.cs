@@ -2,6 +2,7 @@ using api.Data;
 using api.interfaces;
 using api.Modules;
 using api.Repository;
+using api.service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,7 @@ builder.Services.AddIdentity<Appuser, IdentityRole>(option =>
     option.Password.RequiredLength = 8;
 })
 .AddEntityFrameworkStores<ApplicationDBContext>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddAuthentication(option =>
 {
     option.DefaultAuthenticateScheme =
@@ -65,7 +67,22 @@ builder.Services.AddAuthentication(option =>
 builder.Services.AddScoped<IStockInterface, StockRepository>();
 builder.Services.AddScoped<ICommentRepo, CommentRepository>();
 
+
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    string[] roleNames = { "User", "Admin" };
+
+    foreach (var roleName in roleNames)
+    {
+        if (!await roleManager.RoleExistsAsync(roleName))
+        {
+            await roleManager.CreateAsync(new IdentityRole(roleName));
+        }
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -74,7 +91,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseHttpsRedirection();  
 app.UseAuthentication();
 app.UseAuthorization();
 
